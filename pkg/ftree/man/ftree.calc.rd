@@ -15,7 +15,7 @@ ftree.calc(DF)
 }
 
 \value{
-Returns a dataframe containing 18 columns for holding data, results, and connection information.
+Returns a dataframe containing 19 columns for holding data, results, and connection information.
 }
 
 \references{
@@ -29,10 +29,15 @@ Returns a dataframe containing 18 columns for holding data, results, and connect
   
   Vesely, W.E., Stamatelato, M., Dugan, J., Fragola, J., Minarick, J., Railsback, J. (2002)
   Fault Tree Handbook with Aerospace Applications   NASA
+  
+  Doelp, L.C., Lee, G.K., Linney, R.E., Ormsby R.W. (1984) Quantitative fault tree analysis: Gate-by-gate method Plant/Operations Progress
+Volume 3, Issue 4 American Institute of Chemical Engineers
 }
 
 \examples{
-mytree <- ftree.make(type="and", name="a specific undesired event")
+mytree <-ftree.make(type="or")
+mytree <- addActive(mytree,  at=1, mttf=3, mttr=12/8760,name="pump failure")
+mytree <- ftree.calc(mytree)
 }
 
 \keyword{ logic, risk, failure }

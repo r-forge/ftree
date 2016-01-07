@@ -1,9 +1,10 @@
 export(addActive,
 addCtrl,
 addDemand,
-addDormant,
+addLatent,
 addLogic,
 addProbability,
 etree.make,
 ftree.calc,
-ftree.make)
+ftree.make
+)
