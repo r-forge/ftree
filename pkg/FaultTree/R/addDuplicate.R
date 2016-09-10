@@ -18,22 +18,22 @@ addDuplicate<-function(DF, at, dup_id)  {
 ## Since AND gates are calculated in binary fashion, these too should not require a connection limit
 ## All specialty gates must be limited to binary feeds only
 
-##	if(DF$Type[parent]>11 && length(which(DF$Parent==at))>1) {
-##		stop("connection slot not available")
-#3	}
-
 	condition=0
 	if(DF$Type[parent]>11 )  {
+		if(length(which(DF$CParent==at))>1)  {
+		stop("connection slot not available")
+		}
 		if( length(which(DF$CParent==at))==0)  {
-			condition=1
+			if(DF$Cond_Code[parent]<10)  {
+				condition=1
+			}
 		}else{
-			if(length(which(DF$CParent==at))>1)  {
-				stop("connection slot not available")
+##  length(which(DF$CParent==at))==1
+			if(DF$Cond_Code[parent]>9)  {
+				condition=1
 			}
 		}
 	}
-
-
 
 	dup_row<-which(DF$ID==dup_id)
 	rows2copy<-dup_row
@@ -69,14 +69,19 @@ addDuplicate<-function(DF, at, dup_id)  {
 	for(x in 1:length(rows2copy))  {
 		dup_row<-rows2copy[x]
 		if(x==1) {
-			parent_id<- at
+			cparent_id<- at
+## It would take considerable testing to determine that this duplicate
+## as a single entry should be displayed under a previous duplicate
+## because the duplicated entry was also displayed under this same sibling
+			gparent_id<- at
 			cond_val<-condition
 		}else{
-			parent_id<-DF$CParent[dup_row]+id_offset
+			cparent_id<-DF$CParent[dup_row]+id_offset
+			gparent_id<-DF$GParent[dup_row]+id_offset
 			cond_val<-DF$Condition[dup_row]
 		}
 ## Using modifier on parent_row label, since it was unfortunately used before
-		this_parent_row<-which(DF$ID==parent_id)
+##		this_parent_row<-which(DF$ID==cparent_id)
 
 
 	## just in case we are duplicating a previously duplicated item
@@ -89,8 +94,8 @@ addDuplicate<-function(DF, at, dup_id)  {
 
 		Dfrow<-data.frame(
 			ID=	DF$ID[dup_row]+id_offset	,
-			GParent=	parent_id	,
-			CParent=	parent_id	,
+			GParent=	gparent_id	,
+			CParent=	cparent_id	,
 			Level=	DF$Level[parent]+1	,
 			Type=	DF$Type[dup_row]	,
 			CFR=	DF$CFR[dup_row]	,
@@ -99,7 +104,7 @@ addDuplicate<-function(DF, at, dup_id)  {
 			MOE=	moe	,
 			PHF_PZ=	DF$PHF_PZ[dup_row]	,
 			Condition=	cond_val,
-			Repairable=	DF$Repairable[dup_row]	,
+			Cond_Code=	DF$Cond_Code[dup_row]	,
 			Interval=	DF$Interval[dup_row]	,
 			Tag_Obj=	DF$Tag_Obj[dup_row]	,
 			Name=	DF$Name[dup_row]	,
