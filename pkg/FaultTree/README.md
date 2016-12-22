@@ -1,26 +1,25 @@
 # FaultTree
-## Fault tree back office prototype
+## Fault Tree Analysis on R
 
-This R package is used to build a fault tree as a dataframe object. 
-A tree is constructed by an initial ftree.make() call.  Subsequent addition of 
-add... functions build up the tree.  The logic gates of a fault tree are calculated from bottom to top
-in a batch fashion.
+This R package is used to build a fault tree as a dataframe object. There is no GUI associated with this package. 
+A tree is constructed by building a script with an initial ftree.make() call.  Subsequent addition of 
+add... functions build up the tree.  
 
-There is no GUI associated with this package, yet. Logic gate calculations are performed using boolean algebra and cross-multiplication of demands (conditional fail rates) 
-with failed state probability values. Latent component events assume exponential fail rates for calculation of fractional downtime values. 
-Minimal cut sets are now determined by the MOCUS algorithm. This is a candidate for future C++ conversion using RcppArmadillo.
-
-It is possible to augment this package with the solution of Markov models, but this is a subject for
+The logic gates of a fault tree are calculated from bottom to top
+in a batch fashion. Logic gate calculations are performed using boolean algebra and cross-multiplication of demands (conditional fail rates) 
+with failed state probability values. Latent component events assume exponential fail rates for calculation of fractional downtime values. It is possible to augment this package with the solution of Markov models, but this is a subject for
 further development. As is, the presentation of simple results is believed to be more powerful for practical
 purposes than seeking a more complex approach.
 
-Output is can be read as a sub-view of the dataframe object holding the tree. Alternatively, a graphical output
-is available from a generated html file loaded into a browser with internet connectivity (for access to the D3 javascript library via cdn). 
+Output can be read as a sub-view of the dataframe object holding the tree. Alternatively, a graphical output
+is available from a generated html file loaded into a browser with internet connectivity (for access to the D3 javascript library via cdn). This package can also be treated as an htmlwidget using the reverse-depend package FaultTree.widget at github/jto888/FaulTree.widget.
+Eventual release to CRAN is expected to include the widget generation.
 
-This package can also be treated as an htmlwidget using the reverse-depend package FaultTree.widget at github/jto888/FaulTree.widget.
-Eventual release to CRAN is expected to be in widget form, only.
+Minimal cut sets are now determined by the top-down MOCUS algorithm. This is a candidate for future C++ conversion using RcppArmadillo.
 
-### Installation 
+Those new to R and/or fault tree analysis are referred to http://www.openreliability.org/faulttree-users-tutorial/ for comprehensive installation and use instructions.
+
+### Experienced R User Installation 
 ```r
 # Install from this repo in GitHub
 if (packageVersion("devtools") < 1.6) {
@@ -34,7 +33,7 @@ library(FaultTree)
 **Example Scripts**  
 ### Example 1  
 ```r
-tree1 <- ftree.make(type="cond",reversable_cond=TRUE, name="Site power loss")
+tree1 <- ftree.make(type="priority",reversible_cond=TRUE, name="Site power loss")
 tree1 <- addLogic(tree1, at=1, type="or", name="neither emergency", name2="generator operable")
 tree1 <- addLogic(tree1, at=2, type="and", name="Independent failure", name2="of generators")
 tree1 <- addLatent(tree1, at=3, mttf=5,mttr=12/8760,inspect=1/26, name="e-gen set fails")
@@ -119,7 +118,7 @@ pwr <- addLogic(pwr, at=1, type="and", name="No Output", name2="G2, G3, G4")
 pwr <- addDuplicate( pwr, at=80, dup_id=10)
 pwr <- addDuplicate( pwr, at=80, dup_id=20)
 pwr <- addDuplicate( pwr, at=80, dup_id=45) 
-ftree.cutsets(pwr)
+cutsets(pwr)
 
 # Visualization
 ftree2html(pwr, write_file=TRUE)

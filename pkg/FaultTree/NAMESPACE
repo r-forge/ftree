@@ -5,9 +5,13 @@ addExposed,
 addLatent,
 addLogic,
 addProbability,
+cutsets,
 ftree.calc,
 ftree.cutsets,
 ftree.make,
 ftree.test,
 ftree2html,
-hierarchyDF2json)
+ftree2table,
+hierarchyDF2json,
+test.ftree)
+
