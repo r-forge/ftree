@@ -14,28 +14,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-## these functions will remain internal to the FaultTree package
+## this functions will remain internal to the FaultTree package
 ## it performs a uniform set of tests for all basic component events
 ## and sets some informational variables
 ## the information is returned as a vector to the  calling function
 
-ftree.test<-function(DF) {
-	if(class(DF)!="data.frame") {
-		return(FALSE)
-	}else{
-	if(length(names(DF))!=19)  {
-		return(FALSE)
-		}else{
-			ftree_test<-NULL
-			for(nm in 1:19) {ftree_test<-c(ftree_test,names(DF)[nm]==FT_FIELDS[nm])}
-			if(!all(ftree_test)) {
-				return(FALSE)
-			}else{
-				return(TRUE)
-			}
-		}
-	}
-}
 
 test.basic<-function(DF, at,  display_under, tag)  {
 
@@ -60,16 +43,23 @@ test.basic<-function(DF, at,  display_under, tag)  {
 ## There is no need to limit connections to OR gates for calculation reasons
 ## Since AND gates are calculated in binary fashion, these too should not
 ## require a connection limit, practicality suggests 3 is a good limit.
-## All specialty gates must be limited to binary feeds only
+## All conditional combination gates must be limited to binary feeds only
+## The Combination speicalty gate (Type 15) is limited to a single feed.
 
-
+	if(DF$Type[parent]==15) {
+		if(length(which(DF$CParent==at))>0)  {
+		stop("connection slot not available")
+		}
+## Test for content of attached object(must have both fail rate and probability)
+## Can only be performed in ftree.calc
+	}
 
 	if(DF$Type[parent]==11 && length(which(DF$Parent==at))>2) {
 		warning("More than 3 connections to AND gate.")
 	}
 
 	condition=0
-	if(DF$Type[parent]>11 )  {
+	if(DF$Type[parent]>11 && DF$Type[parent]!=15 )  {
 		if(length(which(DF$CParent==at))>1)  {
 		stop("connection slot not available")
 		}

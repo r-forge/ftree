@@ -17,7 +17,7 @@
 addLogic<-function(DF, type, at, reversible_cond=FALSE, cond_first=TRUE, human_pbf=-1, 
 		name="", name2="", description="")  {
 
-	if(!ftree.test(DF)) stop("first argument must be a fault tree")
+	if(!test.ftree(DF)) stop("first argument must be a fault tree")
 
 	tp<-switch(type,
 		or = 10,
@@ -27,8 +27,10 @@ addLogic<-function(DF, type, at, reversible_cond=FALSE, cond_first=TRUE, human_p
 		cond=14,
 		conditional =14,
 		priority=14,
+		comb=15,
 		stop("gate type not recognized")
 	)
+
 	parent<-which(DF$ID== at)
 	if(length(parent)==0) {stop("connection reference not valid")}
 	thisID<-max(DF$ID)+1
@@ -37,9 +39,18 @@ addLogic<-function(DF, type, at, reversible_cond=FALSE, cond_first=TRUE, human_p
 	if(!DF$MOE[parent]==0) {
 		stop("connection cannot be made to duplicate nor source of duplication")
 	}
+	
+	if(DF$Type[parent]==15) {
+		if(length(which(DF$CParent==at))>0) {
+			stop("connection slot not available")
+		}
+		if(tp!=10) {
+			stop("only OR or basic event can connect to comb gate")
+		}
+	}
 
 	condition=0
-	if(DF$Type[parent]>11 )  {
+	if(DF$Type[parent]>11&& DF$Type[parent]!=15 )  {
 		if(length(which(DF$CParent==at))>1)  {
 		stop("connection slot not available")
 		}
@@ -56,7 +67,7 @@ addLogic<-function(DF, type, at, reversible_cond=FALSE, cond_first=TRUE, human_p
 	}
 
 
-## default is non-repairable, so
+## default is non-reversible, so
 	reversible=0
 	if(reversible_cond==TRUE)  {
 		reversible=1
@@ -70,7 +81,7 @@ addLogic<-function(DF, type, at, reversible_cond=FALSE, cond_first=TRUE, human_p
 		cond_second=0
 		if(cond_first == FALSE)  {
 			cond_second=1
-			if(tp<12) {
+			if(tp<12 || tp>14) {
 				cond_second=0
 				warning(paste0("cond_first entry ignored at gate ",as.character(thisID)))
 				}
