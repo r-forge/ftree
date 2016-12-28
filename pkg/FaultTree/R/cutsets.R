@@ -1,12 +1,11 @@
 cutsets<-function(DF)  {
-	max_len<-length(which(DF$Type>10))
-
+	max_len<-length(which(DF$Type>10))+1
+if(max_len>1)  {
 	cs_lists<-list(NULL)
 	for(len in 2:max_len)  {
 		cs_lists<-c(cs_lists, list(NULL))
 	}
-
-
+}
 
 	child_rows<-which(DF$CParent==DF$ID[1])
 
@@ -133,6 +132,8 @@ cutsets<-function(DF)  {
 			cs_lists[[mat]]<-unique(cs_lists[[mat]])
 		}
 	}
+## This is where the single matrix of first order cutsets failed		
+if(max_len>1)  {
 
 
 ## this is the generalized brute force algorithm  with 4 nested loops
@@ -194,12 +195,17 @@ cutsets<-function(DF)  {
 		}
 	}
 	
-## row names are all 'id_vec' at this point, so here is fix
-
-
+}
+## single row matrices are vectors at this point
+## otherwise matrix row names are all 'id_vec' at this point, so here is fix
 
 	for(list_item in 1:length(cs_lists)) {
 		if(!is.null(cs_lists[[list_item]]))  {
+		
+if(class(cs_lists[[list_item]])=="numeric")  {	
+	cs_lists[[list_item]]<-t(as.matrix(cs_lists[[list_item]]))
+}else{	
+
 			len<-dim(cs_lists[[list_item]])[1]
 			rchrs<-as.character(1:len)
 			matrnms<-NULL
@@ -209,6 +215,7 @@ cutsets<-function(DF)  {
 			}
 
 			row.names(cs_lists[[list_item]])<-matrnms
+}
 		}
 	}
 
