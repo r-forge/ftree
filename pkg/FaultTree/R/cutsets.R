@@ -1,7 +1,8 @@
 cutsets<-function(DF)  {
 	max_len<-length(which(DF$Type>10))+1
-if(max_len>1)  {
 	cs_lists<-list(NULL)
+	
+if(max_len>1)  {
 	for(len in 2:max_len)  {
 		cs_lists<-c(cs_lists, list(NULL))
 	}
