@@ -6,7 +6,7 @@ License: GPL (>= 2)
 Date: 2017-2-7
 Author: David J. Silkworth
 Maintainer: Jacob T. Ormerod <jake@openreliability.org>
-Depends: FaultTree (>=0.1.4)
+Depends: FaultTree
 Description: Fault trees parepared using package FaultTree are given access to advanced calculations on SCRAM.
 URL: http://www.openreliability.org/fault-tree-analysis-on-r/
 LazyLoad: yes
