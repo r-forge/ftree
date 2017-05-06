@@ -14,15 +14,21 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-addLatent<-function(DF, at, mttf, mttr=NULL, pzero="repair", inspect=NULL, display_under=NULL, tag="", name="",name2="", description="")  {
+addLatent<-function(DF, at, mttf, mttr=NULL, pzero=NULL, inspect=NULL, display_under=NULL, tag="", name="",name2="", description="")  {
 
 	at <- tagconnect(DF, at)
-		if(!is.null(display_under))  {
-		display_under<-tagconnect(DF,display_under)
-	}
-	tp<-2
+
+## display_under to be interpreted within test.basic
+##		if(!is.null(display_under))  {
+##		display_under<-tagconnect(DF,display_under)
+##	}
+
+	tp<-2 
 	etp<-0
-#	etp<-4 # will default to zero if mission_time is not defined. 
+	mt<-DF$P2[which(DF$ID==min(DF$ID))]
+	if(mt>0)  {
+		etp<-4
+	}
 
 	info<-test.basic(DF, at,  display_under, tag)
 	thisID<-info[1]
@@ -35,11 +41,14 @@ addLatent<-function(DF, at, mttf, mttr=NULL, pzero="repair", inspect=NULL, displ
 ##	}
 
 	if(is.null(mttf))  {stop("latent component must have mttf")}
-	if(is.null(mttr)) { mttr<- (-1)}
+## can't do this yet still need to reference the argument at pf calculation below.
+##	if(is.null(mttr)) { mttr<- (-1)}
+	if(!is.null(pzero)) {} # silently ignore any input. Argument to be depreciated.
 
 	if(is.null(inspect))  {stop("latent component must have inspection entry")}
 
-	if(is.null(pzero)) {pzero<- (-1)}
+
+
 	if(is.character(inspect))  {
 		if(exists("inspect")) {
 			Tao<-eval((parse(text=inspect)))
@@ -50,30 +59,30 @@ addLatent<-function(DF, at, mttf, mttr=NULL, pzero="repair", inspect=NULL, displ
 		Tao=inspect
 	}
 
-	## default Pzero handling
-	if(pzero=="repair")  {
-		if(!mttr>0)  {stop("mttr required for pzero calculation")}
+## pzero argument has been depreciated, pzero will be calculated based on mttr, if it is provided
+
+## default Pzero=0, it is only a calculated value if mttr is provided
+	pzero<-0
+	if(length(mttr)>0) {
 		pzero=mttr/(mttf+mttr)
 	}
-
-	## fractional downtime method
+		## fractional downtime method
 	pf<-1-1/((1/mttf)*Tao)*(1-exp(-(1/mttf)*Tao))
-	if(is.numeric(pzero))  {
-		if(pzero>=0 && pzero<1) {
-			pf<- 1-(1-pf)*(1-pzero)
-		}else{ stop("pzero entry must be zero to one")}
-	}
+	pf<- 1-(1-pf)*(1-pzero)
+## Now it is okay to set mttr to -1 for ftree entry
+	if(is.null(mttr)) { mttr<- (-1)}
 
-	gp<-at
-	if(length(display_under)!=0)  {
-		if(DF$Type[parent]!=10) {stop("Component stacking only permitted under OR gate")}
-		if(DF$CParent[display_under]!=at) {stop("Must stack at component under same parent")}
-		if(length(which(DF$GParent==display_under))>0 )  {
-			stop("display under connection not available")
-		}else{
-			gp<-display_under
-		}
-	}
+## This duplicates code in test.basic. Only do this once!
+#	gp<-at
+#	if(length(display_under)!=0)  {
+#		if(DF$Type[parent]!=10) {stop("Component stacking only permitted under OR gate")}
+#		if(DF$CParent[display_under]!=at) {stop("Must stack at component under same parent")}
+#		if(length(which(DF$GParent==display_under))>0 )  {
+#			stop("display under connection not available")
+#		}else{
+#			gp<-display_under
+#		}
+#	}
 
 	Dfrow<-data.frame(
 		ID=	thisID	,

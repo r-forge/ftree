@@ -18,9 +18,10 @@
 		display_under=NULL, tag="", exposure=NULL, name="",name2="", description="")  {
 
 	at <- tagconnect(DF, at)
-		if(!is.null(display_under))  {
-		display_under<-tagconnect(DF,display_under)
-	}
+## display_under to be interpreted within test.basic
+##		if(!is.null(display_under))  {
+##		display_under<-tagconnect(DF,display_under)
+##	}
 
   	tp <-5
 
@@ -49,10 +50,9 @@
 		stop("exposed type not recognized")
 	) 
 	
-	
+	mt_top<-DF$P2[which(DF$ID==min(DF$ID))]
 ## weibull exposure time can only be mission_time identified at P2 in top event.
 if(is.null(exposure) || etype==2)  {
-	mt_top<-DF$P2[which(DF$ID==min(DF$ID))]
 	mt<-mt_top
 }else{
 ## This is to be a seldom used over-ride of system mission time 
@@ -106,16 +106,17 @@ if( !mt>0) {
 		}
 	}
 
-	gp<-at
-	if(length(display_under)!=0)  {
-		if(DF$Type[parent]!=10) {stop("Component stacking only permitted under OR gate")}
-		if(DF$CParent[display_under]!=at) {stop("Must stack at component under same parent")}
-		if(length(which(DF$GParent==display_under))>0 )  {
-			stop("display under connection not available")
-		}else{
-			gp<-display_under
-		}
-	}
+## This duplicates code in test.basic. Only do this once!
+#	gp<-at
+#	if(length(display_under)!=0)  {
+#		if(DF$Type[parent]!=10) {stop("Component stacking only permitted under OR gate")}
+#		if(DF$CParent[display_under]!=at) {stop("Must stack at component under same parent")}
+#		if(length(which(DF$GParent==display_under))>0 )  {
+#			stop("display under connection not available")
+#		}else{
+#			gp<-display_under
+#		}
+#	}
 
 	Dfrow <- data.frame(
 		ID = thisID,
