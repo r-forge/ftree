@@ -92,61 +92,70 @@ for(gate in 1:length(gids)) {
 	treeXML=""
 
 	for(gate in 1:length(gids)) {
+## cannot replicate MOB tags in mef, else get redifine gate error from scram
+		if(DF$MOE[which(DF$ID==gids[gate])]<1)  {
+		
 ## tagname at DF[which(DF$ID==min(DF$ID)),] is already set to "top"
 ## gates might now have tags issued.
 #		if(gate==1) {
 #			tagname="top"
 #		}else{
-		tagname<-DF$Tag_Obj[which(DF$ID==gids[gate])]
-		if(tagname=="")  {
-			tagname<-paste0("G_", gids[gate])
-		}
-
-		treeXML<-paste0(treeXML,'<define-gate name="',tagname, '">',lb)
-
-		if(DF$Type[which(DF$ID==gids[gate])]==16) {
-			p1<-DF$P1[which(DF$ID==gids[gate])]
-			treeXML<-paste0(treeXML,'<',types[gate],' min="',p1,'">',lb)
-		}else{
-			if(types[gate]!="passthrough") {
-				treeXML<-paste0(treeXML,'<',types[gate],'>',lb)
+			tagname<-DF$Tag_Obj[which(DF$ID==gids[gate])]
+			if(tagname=="")  {
+				tagname<-paste0("G_", gids[gate])
 			}
-		}
 
-## Define the children of this gate applying default tag names where needed
-		chids<-DF$ID[which(DF$CParent==gids[gate])]
+			treeXML<-paste0(treeXML,'<define-gate name="',tagname, '">',lb)
 
-		for(child in 1:length(chids)) {
-			tagname<-DF$Tag_Obj[which(DF$ID==chids[child])]
-			if(DF$Type[which(DF$ID==chids[child])]>9) {
-				if(tagname=="")  {
-					tagname<-paste0("G_", chids[child])
-				}
-				treeXML<-paste0(treeXML,'<gate name="',tagname,'"/>',lb)
+			if(DF$Type[which(DF$ID==gids[gate])]==16) {
+				p1<-DF$P1[which(DF$ID==gids[gate])]
+				treeXML<-paste0(treeXML,'<',types[gate],' min="',p1,'">',lb)
 			}else{
-#  house events should not come with tags
-				if(DF$Type[which(DF$ID==chids[child])]==9) {
+				if(types[gate]!="passthrough") {
+					treeXML<-paste0(treeXML,'<',types[gate],'>',lb)
+				}
+			}
+
+	## Define the children of this gate applying default tag names where needed
+			chids<-DF$ID[which(DF$CParent==gids[gate])]
+
+			for(child in 1:length(chids)) {
+				tagname<-DF$Tag_Obj[which(DF$ID==chids[child])]
+				if(DF$Type[which(DF$ID==chids[child])]>9) {
 					if(tagname=="")  {
-						tagname<-paste0("H_", chids[child])
-					}
-					treeXML<-paste0(treeXML,'<house-event name="',tagname,'"/>',lb)
-				}else{
-					if(tagname=="")  {
-## must use source ID for MOE when assigning default tagname to events
+	## must use source ID for MOE when assigning default tagname to events
 						if(DF$MOE[which(DF$ID==chids[child])]<1)  {
-							tagname<-paste0("E_", chids[child])
+							tagname<-paste0("G_", chids[child])
 						}else{
-							tagname<-paste0("E_", DF$MOE[which(DF$ID==chids[child])])
+							tagname<-paste0("G_", DF$MOE[which(DF$ID==chids[child])])
 						}
 					}
-					treeXML<-paste0(treeXML,'<basic-event name="',tagname,'"/>',lb)
-				} ## added else block closure due to house tag code
+					treeXML<-paste0(treeXML,'<gate name="',tagname,'"/>',lb)
+				}else{
+	#  house events should not come with tags
+					if(DF$Type[which(DF$ID==chids[child])]==9) {
+						if(tagname=="")  {
+							tagname<-paste0("H_", chids[child])
+						}
+						treeXML<-paste0(treeXML,'<house-event name="',tagname,'"/>',lb)
+					}else{
+						if(tagname=="")  {
+	## must use source ID for MOE when assigning default tagname to events
+							if(DF$MOE[which(DF$ID==chids[child])]<1)  {
+								tagname<-paste0("E_", chids[child])
+							}else{
+								tagname<-paste0("E_", DF$MOE[which(DF$ID==chids[child])])
+							}
+						}
+						treeXML<-paste0(treeXML,'<basic-event name="',tagname,'"/>',lb)
+					} ## added else block closure due to house tag code
+				}
 			}
+			if(types[gate]!="passthrough") {
+				treeXML<-paste0(treeXML, ' </',types[gate],'>',lb)
+			}
+			treeXML<-paste0(treeXML,'</define-gate>',lb)
 		}
-		if(types[gate]!="passthrough") {
-			treeXML<-paste0(treeXML, ' </',types[gate],'>',lb)
-		}
-		treeXML<-paste0(treeXML,'</define-gate>',lb)
 	}
 
 	treeXML<-paste0(treeXML,'</define-fault-tree>',lb)
@@ -326,6 +335,54 @@ for(gate in 1:length(gids)) {
 ############################################################################
 ## end of GLM basic-event and applicable deviate on 'lambda'  ####
 ############################################################################
+
+######################################################################################
+####   periodic-test (Latent)  basic-event entry with lambda deviate, as applicable  ####
+######################################################################################
+
+		if(event_entry_done==FALSE && etype==4)  {
+			event_entry_done=TRUE
+			eventXML<-paste0(eventXML, '<periodic-test>',lb)
+
+## as with Exponential Lambda is always first and might have a deviate applied
+			if(deviate>0) {
+				eventXML<-define_deviate(DF, eventXML, eids[event], deviate)
+			}else{
+				if(DF$CFR[which(DF$ID==eids[event])]>0) {
+				eventXML<-paste0(eventXML, '<float value="', DF$CFR[which(DF$ID==eids[event])], '"/>',lb)
+				}else{
+					stop(paste0("must have fail rate at DF$CFR[",which(DF$ID==eids[event]),"]"))
+				}
+			}
+## for periodic-test the aplication of repair rate, mu (1/CRT), 
+## is the difference between 4 and 5 parameter representations.
+			if(DF$CRT[which(DF$ID==eids[event])]>0) {
+				eventXML<-paste0(eventXML, '<float value="', 1/DF$CRT[which(DF$ID==eids[event])], '"/>',lb)
+			}
+
+## The next two parameter entries are the inspection interval and time to  first inspection
+## I don't kmow why one would feel they had to set first inspection different than rest
+## This implementation will set them equal.
+			if(DF$P2[which(DF$ID==eids[event])]>0) {
+				eventXML<-paste0(eventXML, '<float value="', DF$P2[which(DF$ID==eids[event])], '"/>',lb)
+				eventXML<-paste0(eventXML, '<float value="', DF$P2[which(DF$ID==eids[event])], '"/>',lb)
+			}else{
+				stop(paste0("must have inspection interval at DF$P2[",which(DF$ID==eids[event]),"]"))
+			}
+
+## There is no alternative, the mission_time must be set to pass in Latent as periodic-test
+
+			MT<-DF$P2[which(DF$ID==min(DF$ID))]
+				if(!MT>0) {stop("system_mission_time not set for exposed events")
+			}
+			eventXML<-paste0(eventXML, '<system-mission-time/>',lb)
+
+			eventXML<-paste0(eventXML, '</periodic-test>',lb)
+			eventXML<-paste0(eventXML, '</define-basic-event>',lb)
+			}
+##################################################################################
+## end of periodic-test basic-event and applicable deviate on 'lambda'  ####
+##################################################################################
 
 
 		}  #Close MOE skip over
