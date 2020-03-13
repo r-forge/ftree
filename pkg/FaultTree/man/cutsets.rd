@@ -3,19 +3,22 @@
 
 \title{ Fault Tree Minimal Cut Set Determination}
 
-\description{Performs the original MOCUS (Method for Obtaining Cut Sets) developed by J. Fussell and W. Vesely.
+\description{Determines minimal cutsets by various methods.
 }
 
 \usage{
-cutsets(DF) 
+cutsets(DF, ft_node=1, method="mocus", by="tag")  
 }
 
 \arguments{
 \item{DF}{ A fault tree dataframe such as returned from ftree.make or related add... functions.}
+\item{ft_node}{A gate node ID treated as top of (sub)tree to be calculated.}
+\item{method}{The method for calculation either 'mocus' or 'prime-implicants'}
+\item{by}{Selection of identifier for each element of the cutset either 'tag' or 'id'}
 }
-
 \value{
-Returns a list of matrices for each of cut set lengths found. Each element is defined by its unique ID assigned in the fault tree.
+Returns a list of matrices for each of cut set lengths found. Each element is defined by its unique ID assigned in the fault tree
+or by its unique Tag applied by the user.
 }
 
 \references{
@@ -36,22 +39,23 @@ Returns a list of matrices for each of cut set lengths found. Each element is de
   
   Doelp, L.C., Lee, G.K., Linney, R.E., Ormsby R.W. (1984) Quantitative fault tree analysis: Gate-by-gate method Plant/Operations Progress
    Volume 3, Issue 4 American Institute of Chemical Engineers
+
+  Rauzy, Antoine (1993) "New algorithms for fault trees analysis"
+   Reliabiity Engineering System Safety, volume 40
+   
+  Limnios, Nikolaos (2007) Fault Trees ISTE,Ltd.
 }
 
 \examples{
-mytree <-ftree.make(type="or")
-mytree <- addLogic(mytree, at=1, type= "and", name="A and B failed")
-mytree <- addProbability(mytree, at=2, prob=.01, name="switch A failure")
-mytree <- addProbability(mytree, at=2, prob=.01, name="switch B failure")
-mytree <- addLogic(mytree, at=1, type= "and", name="A and C failed")
-mytree <- addDuplicate(mytree, at=5, dup_id=3)
-mytree <- addProbability(mytree, at=5, prob=.01, name="switch C failure")
-mytree <- addLogic(mytree, at=1, type= "and", name="B and C failed")
-mytree <- addDuplicate(mytree, at=8, dup_id=4)
-mytree <- addDuplicate(mytree, at=8, dup_id=7)
-mycutsets<-cutsets(mytree)
-
-
+minex2<-ftree.make(type="and")
+minex2<-addProbability(minex2, at="top", prob=.01, tag="X1", name="X1")
+minex2<-addLogic(minex2, at="top", type="or", tag="G1", name="G1")
+minex2<-addProbability(minex2, at="G1", prob=.02, tag="X2", name="X2")
+minex2<-addProbability(minex2, at="G1", prob=.03, tag="X3", name="X3")
+minex2<-addLogic(minex2, at="top", type="or", tag="G2", name="G2")
+minex2<-addDuplicate(minex2, at="G2", dup_of="X3")
+minex2<-addProbability(minex2, at="G2", prob=.04, tag="X4", name="X4")
+minex2_cs<-cutsets(minex2)
 }
 
 \keyword{ logic, risk, failure }
