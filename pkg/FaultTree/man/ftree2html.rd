@@ -7,7 +7,7 @@
 }
 
 \usage{
-ftree2html(DF,dir="", write_file=FALSE)
+ftree2html(DF,dir="", write_file=TRUE)
 }
 
 \arguments{
